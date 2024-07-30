@@ -1,0 +1,358 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+?>
+<div class="container mt-4">
+    <p><?= $block->escapeHtml(__('Use the booking form below to arrange a call-out from an engineer for fast repairs – you choose the date and time for our visit. If we need parts that our engineer doesn\'t have on visit (though they carry a lot), you won\'t be charged for subsequent appointments to fit them.')) ?></p>
+    
+    <div id="error-messages" class="error-container" style="display: none;"></div>
+    
+    <form action="<?= $block->escapeUrl($block->getUrl('bookingform/index/submit')) ?>" method="post" id="booking-form">
+        <div id="step1" class="form-step">
+            <h2><?= $block->escapeHtml(__('Step 1/3 | Appliance Details')) ?></h2>
+            <p><?= $block->escapeHtml(__('Please enter the details below. The fields marked * are compulsory.')) ?></p>
+            
+            <!-- Service Type -->
+            <div class="form-group">
+                <label><?= $block->escapeHtml(__('Service *')) ?></label>
+                <div>
+                    <label><input type="radio" name="service" value="repair" required> <?= $block->escapeHtml(__('Repair')) ?></label>
+                    <label><input type="radio" name="service" value="install" required> <?= $block->escapeHtml(__('Install')) ?></label>
+                </div>
+            </div>
+
+            <!-- Postcode -->
+            <div class="form-group">
+                <label for="customer_postcode"><?= $block->escapeHtml(__('Postcode *')) ?></label>
+                <input type="text" id="customer_postcode" name="postcode" required class="form-control">
+            </div>
+
+            <!-- Appliance Type -->
+            <div class="form-group">
+                <label for="applianceType"><?= $block->escapeHtml(__('Appliance Type *')) ?></label>
+                <select id="applianceType" name="applianceType" required class="form-control">
+                    <option value=""><?= $block->escapeHtml(__('Select Appliance Type')) ?></option>
+                    <option value="built-in-oven"><?= $block->escapeHtml(__('Built-In Oven')) ?></option>
+                    <option value="cooker-oven"><?= $block->escapeHtml(__('Cooker & Oven')) ?></option>
+                    <option value="dishwasher"><?= $block->escapeHtml(__('Dishwasher')) ?></option>
+                    <option value="extractor-cooker-hood"><?= $block->escapeHtml(__('Extractor/Cooker Hood')) ?></option>
+                    <option value="freezer"><?= $block->escapeHtml(__('Freezer')) ?></option>
+                    <option value="fridge-freezer"><?= $block->escapeHtml(__('Fridge/Freezer')) ?></option>
+                    <option value="hob"><?= $block->escapeHtml(__('Hob')) ?></option>
+                    <option value="refrigerator"><?= $block->escapeHtml(__('Refrigerator')) ?></option>
+                    <option value="tumble-dryer"><?= $block->escapeHtml(__('Tumble Dryer')) ?></option>
+                    <option value="washer-dryer"><?= $block->escapeHtml(__('Washer Dryer')) ?></option>
+                    <option value="washing-machine"><?= $block->escapeHtml(__('Washing Machine')) ?></option>
+                    <option value="wine-chiller"><?= $block->escapeHtml(__('Wine Chiller')) ?></option>
+                </select>
+            </div>
+
+            <!-- Appliance Subtype (will be populated dynamically) -->
+            <div id="applianceSubtype" class="form-group" style="display:none;">
+                <!-- This will be populated via JavaScript -->
+            </div>
+
+            <!-- Appliance Make -->
+            <div class="form-group">
+                <label for="applianceMake"><?= $block->escapeHtml(__('Make of Appliance *')) ?></label>
+                <select id="applianceMake" name="applianceMake" required class="form-control">
+                    <option value=""><?= $block->escapeHtml(__('Select Make')) ?></option>
+                    <?php
+                    $makes = ['AEG', 'Amica', 'Ariston', 'Bauknecht', 'Baumatic', 'Beko', 'Belling', 'Bertazzoni', 'Blomberg', 'Bosch', 'Britannia', 'Bush', 'Candy', 'Cannon', 'Caple', 'CDA', 'Creda', 'Currys Essentials', 'Daewoo', 'De Dietrich', 'Delonghi', 'Electrolux', 'Elica', 'Falcon', 'Fisher & Paykel', 'Flavel', 'Fridgemaster', 'Frigidaire', 'Gorenje', 'Grundig', 'Haden', 'Haier', 'Hisense', 'Hoover', 'Hotpoint', 'Husky', 'Hygena', 'ILVE', 'Indesit', 'Kenwood', 'Lacanche', 'Lamona', 'Lec', 'Leisure', 'LG', 'Liebherr', 'Maytag', 'Mercury', 'Miele', 'Montpellier', 'Neff', 'New World', 'Panasonic', 'Rangemaster', 'Redfyre', 'Rosires', 'Samsung', 'Sharp', 'Siemens', 'Smeg', 'Stoves', 'Tricity Bendix', 'Whirlpool', 'Zanussi', 'Zenith', 'Other'];
+                    foreach ($makes as $make) :
+                    ?>
+                        <option value="<?= $block->escapeHtmlAttr($make) ?>"><?= $block->escapeHtml(__($make)) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <button type="button" id="getQuote" class="btn btn-primary"><?= $block->escapeHtml(__('Get a Quote')) ?></button>
+        </div>
+
+        <div id="step2" class="form-step" style="display:none;">
+            <h2><?= $block->escapeHtml(__('Your Repair quote results')) ?></h2>
+            <h3><?= $block->escapeHtml(__('Your Details')) ?></h3>
+            <p><strong><?= $block->escapeHtml(__('Postcode:')) ?></strong> <span id="quotePostcode"></span></p>
+            <p><strong><?= $block->escapeHtml(__('Appliance:')) ?></strong> <span id="quoteAppliance"></span></p>
+            <p><strong><?= $block->escapeHtml(__('Appliance Type:')) ?></strong> <span id="quoteApplianceType"></span></p>
+            <p><strong><?= $block->escapeHtml(__('Appliance Make:')) ?></strong> <span id="quoteApplianceMake"></span></p>
+
+            <h2><?= $block->escapeHtml(__('One-Off Repair: £')) ?><span id="quotePrice"></span> <?= $block->escapeHtml(__('+VAT (Excluding parts)')) ?></h2>
+            <p><strong><?= $block->escapeHtml(__('Prefer to book over the phone? 0208 226 3633')) ?></strong></p>
+            <p><?= $block->escapeHtml(__('Mon - Fri 8am - 6pm / Sat - 9am - 5pm')) ?></p>
+
+            <div class="navigation-buttons">
+                <button type="button" id="changeDetails" class="btn btn-secondary"><?= $block->escapeHtml(__('Change Details')) ?></button>
+                <button type="button" id="bookOnline" class="btn btn-primary"><?= $block->escapeHtml(__('Book Online')) ?></button>
+            </div>
+        </div>
+        <div id="step3" class="form-step" style="display:none;">
+            <h2><?= $block->escapeHtml(__('Step 2/3 | Visit Details')) ?></h2>
+            <p><?= $block->escapeHtml(__('Please enter the details below. The fields marked * are compulsory.')) ?></p>
+            <h3><?= $block->escapeHtml(__('4. Visit Details')) ?></h3>
+            <p><?= $block->escapeHtml(__('Please select the preferred Date and Time.')) ?></p>
+            <div class="form-group">
+                <label for="visitDate"><?= $block->escapeHtml(__('Preferred Date *')) ?></label>
+                <input type="date" id="visitDate" name="visitDate" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="visitTime"><?= $block->escapeHtml(__('Preferred Time *')) ?></label>
+                <select id="visitTime" name="visitTime" required class="form-control">
+                    <option value=""><?= $block->escapeHtml(__('Select Time')) ?></option>
+                    <option value="10:00-12:00">10:00 - 12:00</option>
+                    <option value="12:00-14:00">12:00 - 14:00</option>
+                    <option value="14:00-16:00">14:00 - 16:00</option>
+                    <option value="16:00-18:00">16:00 - 18:00</option>
+                    <option value="18:00-20:00">18:00 - 20:00</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary next-step"><?= $block->escapeHtml(__('Next')) ?></button>
+            <button type="button" class="btn btn-secondary edit-button"><?= $block->escapeHtml(__('Edit')) ?></button>
+        </div>
+        <div id="step4" class="form-step" style="display:none;">
+            <h2><?= $block->escapeHtml(__('Step 3/3 | Customer Details')) ?></h2>
+            <p><?= $block->escapeHtml(__('Please enter the details below. The fields marked * are compulsory.')) ?></p>
+            <h3><?= $block->escapeHtml(__('5. Please enter your contact details')) ?></h3>
+
+            <div class="form-group">
+                <label><?= $block->escapeHtml(__('Landlord/Agent *')) ?></label>
+                <div>
+                    <label><input type="radio" name="landlordAgent" value="yes" required> <?= $block->escapeHtml(__('Yes')) ?></label>
+                    <label><input type="radio" name="landlordAgent" value="no" required checked> <?= $block->escapeHtml(__('No')) ?></label>
+                </div>
+            </div>
+
+            <!-- Regular customer details -->
+            <div id="regularCustomerDetails">
+                <div class="form-group rsform-block rsform-block-firstname">
+                    <label class="col-sm-3 control-label formControlLabel" for="firstname"><?= $block->escapeHtml(__('Full Name')) ?><span class="star">&nbsp;*</span></label>
+                    <div class="col-sm-9 formControls">
+                        <div class="form-group row">
+                            <div class="col-xs-12 col-md-2 mob-name">
+                                <div class="input-group">
+                                    <select name="title" id="title" class="form-control" required>
+                                        <option value=""><?= $block->escapeHtml(__('Title*')) ?></option>
+                                        <option value="Mr"><?= $block->escapeHtml(__('Mr')) ?></option>
+                                        <option value="Ms"><?= $block->escapeHtml(__('Ms')) ?></option>
+                                        <option value="Mrs"><?= $block->escapeHtml(__('Mrs')) ?></option>
+                                        <option value="Miss"><?= $block->escapeHtml(__('Miss')) ?></option>
+                                        <option value="Mx"><?= $block->escapeHtml(__('Mx')) ?></option>
+                                        <option value="Dr"><?= $block->escapeHtml(__('Dr')) ?></option>
+                                        <option value="Rev"><?= $block->escapeHtml(__('Rev')) ?></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-5 mob-name">
+                                <div class="input-group">
+                                    <span class="input-group-addon" id="name-addon2"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                    <input type="text" placeholder="First Name*" name="firstname" id="firstname" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-5 mob-name">
+                                <div class="input-group">
+                                    <span class="input-group-addon" id="name-addon3"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                    <input type="text" placeholder="Last Name*" name="lastname" id="lastname" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email"><?= $block->escapeHtml(__('Email address *')) ?></label>
+                    <input type="email" id="email" name="email" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="phone"><?= $block->escapeHtml(__('Telephone or mobile number *')) ?></label>
+                    <input type="tel" id="phone" name="phone" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="postcode"><?= $block->escapeHtml(__('Postcode *')) ?></label>
+                    <input type="text" id="postcode" name="postcode" required class="form-control">
+                    <button type="button" id="findAddress" class="btn btn-secondary"><?= $block->escapeHtml(__('Find Address')) ?></button>
+                </div>
+                <div class="form-group">
+                    <label for="address1"><?= $block->escapeHtml(__('Address line 1 *')) ?></label>
+                    <input type="text" id="address1" name="address1" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="address2"><?= $block->escapeHtml(__('Address line 2')) ?></label>
+                    <input type="text" id="address2" name="address2" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="city"><?= $block->escapeHtml(__('City/Town')) ?></label>
+                    <input type="text" id="city" name="city" class="form-control">
+                </div>
+            </div>
+
+            <!-- Landlord/Agent Details -->
+            <div id="landlordAgentDetails" style="display:none;">
+                <h4><?= $block->escapeHtml(__('Property/Tenants Details:')) ?></h4>
+                <div class="form-group rsform-block rsform-block-firstname">
+                    <label class="col-sm-3 control-label formControlLabel" for="tenant_firstname"><?= $block->escapeHtml(__('Full Name')) ?><span class="star">&nbsp;*</span></label>
+                    <div class="col-sm-9 formControls">
+                        <div class="form-group row">
+                            <div class="col-xs-12 col-md-2 mob-name">
+                                <div class="input-group">
+                                    <select name="tenant_title" id="tenant_title" class="form-control" required>
+                                        <option value=""><?= $block->escapeHtml(__('Title*')) ?></option>
+                                        <option value="Mr"><?= $block->escapeHtml(__('Mr')) ?></option>
+                                        <option value="Ms"><?= $block->escapeHtml(__('Ms')) ?></option>
+                                        <option value="Mrs"><?= $block->escapeHtml(__('Mrs')) ?></option>
+                                        <option value="Miss"><?= $block->escapeHtml(__('Miss')) ?></option>
+                                        <option value="Mx"><?= $block->escapeHtml(__('Mx')) ?></option>
+                                        <option value="Dr"><?= $block->escapeHtml(__('Dr')) ?></option>
+                                        <option value="Rev"><?= $block->escapeHtml(__('Rev')) ?></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-5 mob-name">
+                                <div class="input-group">
+                                    <span class="input-group-addon" id="tenant-name-addon2"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                    <input type="text" placeholder="First Name*" name="tenant_firstname" id="tenant_firstname" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-5 mob-name">
+                                <div class="input-group">
+                                    <span class="input-group-addon" id="tenant-name-addon3"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                    <input type="text" placeholder="Last Name*" name="tenant_lastname" id="tenant_lastname" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="tenant_email"><?= $block->escapeHtml(__('Email address *')) ?></label>
+                    <input type="email" id="tenant_email" name="tenant_email" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="tenant_phone"><?= $block->escapeHtml(__('Telephone or mobile number *')) ?></label>
+                    <input type="tel" id="tenant_phone" name="tenant_phone" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="tenant_postcode"><?= $block->escapeHtml(__('Postcode *')) ?></label>
+                    <input type="text" id="tenant_postcode" name="tenant_postcode" required class="form-control">
+                    <button type="button" id="tenant_findAddress" class="btn btn-secondary"><?= $block->escapeHtml(__('Find Address')) ?></button>
+                </div>
+                <div class="form-group">
+                    <label for="tenant_address1"><?= $block->escapeHtml(__('Address line 1 *')) ?></label>
+                    <input type="text" id="tenant_address1" name="tenant_address1" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="tenant_address2"><?= $block->escapeHtml(__('Address line 2')) ?></label>
+                    <input type="text" id="tenant_address2" name="tenant_address2" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="tenant_city"><?= $block->escapeHtml(__('City/Town')) ?></label>
+                    <input type="text" id="tenant_city" name="tenant_city" class="form-control">
+                </div>
+
+                <h4><?= $block->escapeHtml(__('Landlord/Billing Details:')) ?></h4>
+                <div class="form-group rsform-block rsform-block-firstname">
+                    <label class="col-sm-3 control-label formControlLabel" for="landlord_firstname"><?= $block->escapeHtml(__('Full Name')) ?><span class="star">&nbsp;*</span></label>
+                    <div class="col-sm-9 formControls">
+                        <div class="form-group row">
+                            <div class="col-xs-12 col-md-2 mob-name">
+                                <div class="input-group">
+                                    <select name="landlord_title" id="landlord_title" class="form-control" required>
+                                        <option value=""><?= $block->escapeHtml(__('Title*')) ?></option>
+                                        <option value="Mr"><?= $block->escapeHtml(__('Mr')) ?></option>
+                                        <option value="Ms"><?= $block->escapeHtml(__('Ms')) ?></option>
+                                        <option value="Mrs"><?= $block->escapeHtml(__('Mrs')) ?></option>
+                                        <option value="Miss"><?= $block->escapeHtml(__('Miss')) ?></option>
+                                        <option value="Mx"><?= $block->escapeHtml(__('Mx')) ?></option>
+                                        <option value="Dr"><?= $block->escapeHtml(__('Dr')) ?></option>
+                                        <option value="Rev"><?= $block->escapeHtml(__('Rev')) ?></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-5 mob-name">
+                                <div class="input-group">
+                                    <span class="input-group-addon" id="landlord-name-addon2"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                    <input type="text" placeholder="First Name*" name="landlord_firstname" id="landlord_firstname" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-5 mob-name">
+                                <div class="input-group">
+                                    <span class="input-group-addon" id="landlord-name-addon3"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                    <input type="text" placeholder="Last Name*" name="landlord_lastname" id="landlord_lastname" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="landlord_email"><?= $block->escapeHtml(__('Email address *')) ?></label>
+                    <input type="email" id="landlord_email" name="landlord_email" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="landlord_phone"><?= $block->escapeHtml(__('Telephone or mobile number *')) ?></label>
+                    <input type="tel" id="landlord_phone" name="landlord_phone" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="landlord_postcode"><?= $block->escapeHtml(__('Postcode *')) ?></label>
+                    <input type="text" id="landlord_postcode" name="landlord_postcode" required class="form-control">
+                    <button type="button" id="landlord_findAddress" class="btn btn-secondary"><?= $block->escapeHtml(__('Find Address')) ?></button>
+                </div>
+                <div class="form-group">
+                    <label for="landlord_company"><?= $block->escapeHtml(__('Company')) ?></label>
+                    <input type="text" id="landlord_company" name="landlord_company" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="landlord_address1"><?= $block->escapeHtml(__('Address line 1 *')) ?></label>
+                    <input type="text" id="landlord_address1" name="landlord_address1" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="landlord_address2"><?= $block->escapeHtml(__('Address line 2')) ?></label>
+                    <input type="text" id="landlord_address2" name="landlord_address2" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="landlord_city"><?= $block->escapeHtml(__('City/Town')) ?></label>
+                    <input type="text" id="landlord_city" name="landlord_city" class="form-control">
+                </div>
+            </div>
+
+            <!-- Common fields for both regular and Landlord/Agent -->
+            <div class="form-group">
+                <label for="faultDescription"><?= $block->escapeHtml(__('Description of Fault *')) ?></label>
+                <textarea id="faultDescription" name="faultDescription" required class="form-control"></textarea>
+                <small><?= $block->escapeHtml(__('Please provide a full description of the fault. Try and avoid just using the word "faulty" or "broken"')) ?></small>
+            </div>
+
+            <div class="form-group">
+                <label for="modelSerial"><?= $block->escapeHtml(__('Model or Serial number of Appliance (Add if Known)')) ?></label>
+                <input type="text" id="modelSerial" name="modelSerial" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="additionalInfo"><?= $block->escapeHtml(__('Additional Information')) ?></label>
+                <textarea id="additionalInfo" name="additionalInfo" class="form-control"></textarea>
+                <small><?= $block->escapeHtml(__('If you have any other information you would like the engineer to know (such as parking arrangements), please provide it here.')) ?></small>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="termsConditions" id="termsConditions" required>
+                    <?= $block->escapeHtml(__('I accept the Terms & Conditions of supply of service. *')) ?>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="callPrior">
+                    <?= $block->escapeHtml(__('Request a call 30 min prior to arrival')) ?>
+                </label>
+            </div>
+
+            <button type="submit" id="confirmBooking" class="btn btn-primary"><?= $block->escapeHtml(__('Confirm Booking')) ?></button>
+            <button type="button" class="btn btn-secondary edit-button"><?= $block->escapeHtml(__('Edit')) ?></button>
+        </div>
+    </form>
+    <div class="booking-confirmation" style="display: none;"></div>
+</div>
+
+<script type="text/x-magento-init">
+{
+    "#booking-form": {
+        "Appliancentre_BookingForm/js/booking-form": {}
+    }
+}
+</script>
