@@ -3,72 +3,73 @@ define('Appliancentre_BookingForm/js/quote-calculator', ['jquery'], function($) 
 
     console.log('quote-calculator.js loaded');
 
-    function calculateQuote(applianceData, showError, showStep) {
+    function calculateMultipleAppliancesQuote(applianceData, showError, showStep) {
         var $getQuoteBtn = $('#getQuote');
         $getQuoteBtn.prop('disabled', true).text('Calculating...');
 
         var service = $('input[name="service"]:checked').val();
         var postcode = $('#customer_postcode').val();
-        var applianceType = $('#applianceType').val();
-        var applianceSubtype = $('input[name="applianceSubtype"]:checked').val();
-        var applianceMake = $('#applianceMake').val();
+        var appliances = [];
 
-        if (!validateQuoteInputs()) {
+        $('.appliance-fields').each(function() {
+            var $appliance = $(this);
+            var applianceType = $appliance.find('.appliance-type').val();
+            var applianceSubtype = $appliance.find('input[name^="appliances"][name$="[applianceSubtype]"]:checked').val();
+            var applianceMake = $appliance.find('select[name$="[applianceMake]"]').val();
+
+            if (applianceType && applianceSubtype && applianceMake) {
+                appliances.push({
+                    type: applianceType,
+                    subtype: applianceSubtype,
+                    make: applianceMake
+                });
+            }
+        });
+
+        if (!validateQuoteInputs(service, postcode, appliances)) {
             showError('Please fill in all required fields');
             $getQuoteBtn.prop('disabled', false).text('Get a Quote');
             return;
         }
 
-        // Calculate total price
-        var total = applianceData.basePrice[service];
-        total += applianceData.appliancePrice[applianceType + '_' + applianceSubtype.toLowerCase()] || 0;
-        total += applianceData.makePrice[applianceMake.toLowerCase()] || 0;
+        var quoteHtml = '';
+        var totalPrice = 0;
 
-        // Format appliance type, subtype, and make for display
-        var formattedApplianceType = formatApplianceType(applianceType);
-        var formattedApplianceSubtype = formatApplianceSubtype(applianceSubtype);
-        var formattedApplianceMake = formatApplianceMake(applianceMake);
+        appliances.forEach(function(appliance, index) {
+            var price = calculateAppliancePrice(appliance, service, applianceData);
+            totalPrice += price;
 
-        // Debug logging
-        console.log('Original:', { applianceType, applianceSubtype, applianceMake });
-        console.log('Formatted:', { formattedApplianceType, formattedApplianceSubtype, formattedApplianceMake });
+            quoteHtml += `
+                <h3>Appliance ${index + 1}</h3>
+                <p><strong>Make:</strong> ${formatApplianceMake(appliance.make)}</p>
+                <p><strong>Appliance:</strong> ${formatApplianceType(appliance.type)}</p>
+                <p><strong>Appliance Subtype:</strong> ${formatApplianceSubtype(appliance.subtype)}</p>
+                <p><strong>Service:</strong> ${service.charAt(0).toUpperCase() + service.slice(1)}</p>
+                <p><strong>One-Off ${service.charAt(0).toUpperCase() + service.slice(1)}:</strong> £${price.toFixed(2)} +VAT (Excluding parts)</p>
+            `;
+        });
 
-        $('#quotePostcode').text(postcode);
-        $('#quoteAppliance').text(formattedApplianceType);
-        $('#quoteApplianceType').text(formattedApplianceSubtype);
-        $('#quoteApplianceMake').text(formattedApplianceMake);
-        $('#quotePrice').text(total.toFixed(2));
+        quoteHtml += `<h3>Total Price: £${totalPrice.toFixed(2)} +VAT (Excluding parts)</h3>`;
 
+        $('#quoteResults').html(quoteHtml);
         showStep(2);
         $getQuoteBtn.prop('disabled', false).text('Get a Quote');
     }
 
-    function validateQuoteInputs() {
-        var service = $('input[name="service"]:checked').val();
-        var postcode = $('#customer_postcode').val();
-        var applianceType = $('#applianceType').val();
-        var applianceSubtype = $('input[name="applianceSubtype"]:checked').val();
-        var applianceMake = $('#applianceMake').val();
+    function validateQuoteInputs(service, postcode, appliances) {
+        return service && postcode && appliances.length > 0;
+    }
 
-        return !!(service && postcode && applianceType && applianceSubtype && applianceMake);
+    function calculateAppliancePrice(appliance, service, applianceData) {
+        var basePrice = applianceData.basePrice[service] || 0;
+        var appliancePrice = applianceData.appliancePrice[appliance.type + '_' + appliance.subtype] || 0;
+        var makePrice = applianceData.makePrice[appliance.make.toLowerCase()] || 0;
+
+        return basePrice + appliancePrice + makePrice;
     }
 
     function formatApplianceType(type) {
-        var typeMap = {
-            'built-in-oven': 'Built-in Oven',
-            'cooker-oven': 'Cooker Oven',
-            'dishwasher': 'Dishwasher',
-            'extractor-cooker-hood': 'Extractor Cooker Hood',
-            'freezer': 'Freezer',
-            'fridge-freezer': 'Fridge Freezer',
-            'hob': 'Hob',
-            'refrigerator': 'Refrigerator',
-            'tumble-dryer': 'Tumble Dryer',
-            'washer-dryer': 'Washer Dryer',
-            'washing-machine': 'Washing Machine',
-            'wine-chiller': 'Wine Chiller'
-        };
-        return typeMap[type] || type;
+        return type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 
     function formatApplianceSubtype(subtype) {
@@ -78,13 +79,13 @@ define('Appliancentre_BookingForm/js/quote-calculator', ['jquery'], function($) 
     }
 
     function formatApplianceMake(make) {
-        return make.split(' ')
+        return make.split('-')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
     }
 
     return {
-        calculateQuote: calculateQuote,
+        calculateMultipleAppliancesQuote: calculateMultipleAppliancesQuote,
         validateQuoteInputs: validateQuoteInputs
     };
 });
