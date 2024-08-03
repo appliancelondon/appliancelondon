@@ -28,16 +28,23 @@ $booking = $viewModel->getBooking();
 
     <h4><?= $block->escapeHtml(__('Appliance Details')) ?></h4>
     <?php 
-    $appliances = json_decode($booking->getAppliances(), true);
-    foreach ($appliances as $index => $appliance): 
+    $appliancesJson = $booking->getAppliances();
+    $appliances = $appliancesJson ? json_decode($appliancesJson, true) : [];
+    if (!empty($appliances)):
+        foreach ($appliances as $index => $appliance): 
     ?>
     <h5><?= $block->escapeHtml(__('Appliance ')) ?> <?= $index + 1 ?></h5>
     <ul>
-        <li><?= $block->escapeHtml(__('Type:')) ?> <?= $block->escapeHtml($appliance['type']) ?></li>
-        <li><?= $block->escapeHtml(__('Subtype:')) ?> <?= $block->escapeHtml($appliance['subtype']) ?></li>
-        <li><?= $block->escapeHtml(__('Make:')) ?> <?= $block->escapeHtml($appliance['make']) ?></li>
+        <li><?= $block->escapeHtml(__('Type:')) ?> <?= $block->escapeHtml($appliance['type'] ?? '') ?></li>
+        <li><?= $block->escapeHtml(__('Subtype:')) ?> <?= $block->escapeHtml($appliance['subtype'] ?? '') ?></li>
+        <li><?= $block->escapeHtml(__('Make:')) ?> <?= $block->escapeHtml($appliance['make'] ?? '') ?></li>
     </ul>
-    <?php endforeach; ?>
+    <?php 
+        endforeach;
+    else:
+    ?>
+    <p><?= $block->escapeHtml(__('No appliance details available.')) ?></p>
+    <?php endif; ?>
 
     <h4><?= $block->escapeHtml(__('Visit Details')) ?></h4>
     <ul>
