@@ -13,7 +13,6 @@ define('Appliancentre_BookingForm/js/booking-form', [
         var errorContainer = $('#error-messages');
         var applianceCount = 1;
 
-        // Function to populate initial appliance fields
         function populateInitialApplianceFields() {
             var $applianceType = $('#applianceType_1');
             var $applianceMake = $('#applianceMake_1');
@@ -22,7 +21,6 @@ define('Appliancentre_BookingForm/js/booking-form', [
             $applianceMake.html(applianceData.getApplianceMakeOptions());
         }
 
-        // Function to add appliance fields
         function addApplianceFields() {
             applianceCount++;
             var applianceHtml = `
@@ -31,7 +29,6 @@ define('Appliancentre_BookingForm/js/booking-form', [
                     <div class="form-group">
                         <label for="applianceType_${applianceCount}">Appliance Type *</label>
                         <select id="applianceType_${applianceCount}" name="appliances[${applianceCount}][applianceType]" required class="form-control appliance-type">
-                            <option value="">Select Appliance Type</option>
                             ${applianceData.getApplianceTypeOptions()}
                         </select>
                     </div>
@@ -41,7 +38,6 @@ define('Appliancentre_BookingForm/js/booking-form', [
                     <div class="form-group">
                         <label for="applianceMake_${applianceCount}">Make of Appliance *</label>
                         <select id="applianceMake_${applianceCount}" name="appliances[${applianceCount}][applianceMake]" required class="form-control">
-                            <option value="">Select Make</option>
                             ${applianceData.getApplianceMakeOptions()}
                         </select>
                     </div>
@@ -51,21 +47,17 @@ define('Appliancentre_BookingForm/js/booking-form', [
             $('#appliances-container').append(applianceHtml);
         }
 
-        // Populate initial appliance fields
         populateInitialApplianceFields();
 
-        // Event listener for Add Appliance button
         $('#add-appliance').on('click', function() {
             addApplianceFields();
         });
 
-        // Event listener for Remove Appliance button
         $(document).on('click', '.remove-appliance', function() {
             $(this).closest('.appliance-fields').remove();
             applianceCount--;
         });
 
-        // Event listener for appliance type change
         $(document).on('change', '.appliance-type', function() {
             var applianceId = $(this).closest('.appliance-fields').data('appliance-id');
             uiHelpers.populateApplianceSubtypes(applianceData.applianceSubtypes, applianceId);
@@ -73,14 +65,11 @@ define('Appliancentre_BookingForm/js/booking-form', [
 
         $('#getQuote').on('click', function(e) {
             e.preventDefault();
+            console.log('Get Quote button clicked');
             var postcode = $('#customer_postcode').val();
             var postcodeValidationResult = postcodeValidation.validatePostcode(postcode);
             if (postcodeValidationResult.valid) {
-                if (quoteCalculator.validateQuoteInputs()) {
-                    quoteCalculator.calculateMultipleAppliancesQuote(applianceData, uiHelpers.showError, uiHelpers.showStep);
-                } else {
-                    uiHelpers.showError('Please fill in all required fields');
-                }
+                quoteCalculator.calculateMultipleAppliancesQuote(applianceData, uiHelpers.showError, uiHelpers.showStep);
             } else {
                 uiHelpers.showError(postcodeValidationResult.message);
             }
@@ -140,7 +129,6 @@ define('Appliancentre_BookingForm/js/booking-form', [
             uiHelpers.enableAllInputs();
         });
 
-        // Initialize Flatpickr
         flatpickr("#visitDate", {
             minDate: "today",
             disable: [
@@ -151,9 +139,7 @@ define('Appliancentre_BookingForm/js/booking-form', [
             dateFormat: "Y-m-d"
         });
 
-        // Initialize
         uiHelpers.showStep(1);
         $('input[name="landlordAgent"]:checked').trigger('change');
-
     };
 });
