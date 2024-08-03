@@ -57,7 +57,17 @@ define('Appliancentre_BookingForm/js/quote-calculator', ['jquery'], function($) 
     }
 
     function validateQuoteInputs(service, postcode, appliances) {
-        return service && postcode && appliances.length > 0;
+        if (!service || !postcode || appliances.length === 0) {
+            return false;
+        }
+
+        for (var i = 0; i < appliances.length; i++) {
+            if (!appliances[i].type || !appliances[i].subtype || !appliances[i].make) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     function calculateAppliancePrice(appliance, service, applianceData) {
