@@ -1,0 +1,136 @@
+/* Form Styles */
+.form-step {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+input[type="radio"] {
+    margin-right: 5px;
+}
+
+button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Quote Display */
+#quoteDisplay {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Navigation Buttons */
+.navigation-buttons {
+    margin-top: 20px;
+}
+
+.navigation-buttons button {
+    margin-right: 10px;
+}
+
+/* Booking Confirmation */
+.booking-confirmation {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.booking-confirmation.show {
+    display: block;
+}
+
+.booking-confirmation-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.booking-confirmation h1 {
+    margin-top: 0;
+    color: #4CAF50;
+}
+
+.booking-confirmation h3,
+.booking-confirmation h4 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.booking-confirmation ul {
+    padding-left: 20px;
+}
+
+.booking-confirmation li {
+    margin-bottom: 5px;
+}
+
+/* Error Messages */
+.error-container {
+    color: #d9534f;
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-group.row {
+        flex-direction: column;
+    }
+
+    .col-xs-12 {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Debug Information */
+pre {
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    padding: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 12px;
+    margin-top: 20px;
+}

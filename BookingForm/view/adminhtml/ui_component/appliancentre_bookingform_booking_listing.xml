@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">appliancentre_bookingform_booking_listing.appliancentre_bookingform_booking_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="add">
+                <url path="*/*/new"/>
+                <class>primary</class>
+                <label translate="true">Add New Booking</label>
+            </button>
+        </buttons>
+        <spinner>appliancentre_bookingform_booking_columns</spinner>
+        <deps>
+            <dep>appliancentre_bookingform_booking_listing.appliancentre_bookingform_booking_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="appliancentre_bookingform_booking_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Appliancentre_BookingForm::booking</aclResource>
+        <dataProvider class="Appliancentre\BookingForm\Ui\Component\Listing\DataProvider" name="appliancentre_bookingform_booking_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <columns name="appliancentre_bookingform_booking_columns">
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="reference_number">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Reference Number</label>
+            </settings>
+        </column>
+        <column name="service">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Service</label>
+            </settings>
+        </column>
+        <column name="appliance_type">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Appliance Type</label>
+            </settings>
+        </column>
+        <column name="visit_date">
+            <settings>
+                <filter>dateRange</filter>
+                <label translate="true">Visit Date</label>
+            </settings>
+        </column>
+        <column name="visit_time">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Visit Time</label>
+            </settings>
+        </column>
+    </columns>
+</listing>
