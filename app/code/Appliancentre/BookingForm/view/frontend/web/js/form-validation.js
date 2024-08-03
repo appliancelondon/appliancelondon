@@ -6,65 +6,84 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
         return re.test(String(email).toLowerCase());
     }
 
-    function validateStep(currentStep, errorContainer) {
-        var errors = [];
-        var isLandlord = $('input[name="landlordAgent"]:checked').val() === 'yes';
+    function validateField($field) {
+        var isValid = true;
+        var errorMessage = '';
 
-        if (currentStep === 1) {
-            if (!$('input[name="service"]:checked').val()) errors.push('Please select a service type.');
-            if (!$('#customer_postcode').val()) errors.push('Please enter your postcode.');
-            if (!$('#applianceType').val()) errors.push('Please select an appliance type.');
-            if (!$('input[name="applianceSubtype"]:checked').val()) errors.push('Please select an appliance subtype.');
-            if (!$('#applianceMake').val()) errors.push('Please select an appliance make.');
-        } else if (currentStep === 3) {
-            if (!$('#visitDate').val()) errors.push('Please select a preferred date.');
-            if (!$('#visitTime').val()) errors.push('Please select a preferred time.');
-        } else if (currentStep === 4) {
-            if (isLandlord) {
-                // Validate Tenant details
-                if (!$('#tenant_title').val()) errors.push('Please select a title for the tenant.');
-                if (!$('#tenant_firstname').val()) errors.push('Please enter the tenant\'s first name.');
-                if (!$('#tenant_lastname').val()) errors.push('Please enter the tenant\'s last name.');
-                if (!$('#tenant_email').val() || !isValidEmail($('#tenant_email').val())) errors.push('Please enter a valid email address for the tenant.');
-                if (!$('#tenant_phone').val()) errors.push('Please enter the tenant\'s phone number.');
-                if (!$('#tenant_postcode').val()) errors.push('Please enter the tenant\'s postcode.');
-                if (!$('#tenant_address1').val()) errors.push('Please enter the tenant\'s address.');
-
-                // Validate Landlord details
-                if (!$('#landlord_title').val()) errors.push('Please select a title for the landlord.');
-                if (!$('#landlord_firstname').val()) errors.push('Please enter the landlord\'s first name.');
-                if (!$('#landlord_lastname').val()) errors.push('Please enter the landlord\'s last name.');
-                if (!$('#landlord_email').val() || !isValidEmail($('#landlord_email').val())) errors.push('Please enter a valid email address for the landlord.');
-                if (!$('#landlord_phone').val()) errors.push('Please enter the landlord\'s phone number.');
-                if (!$('#landlord_postcode').val()) errors.push('Please enter the landlord\'s postcode.');
-                if (!$('#landlord_address1').val()) errors.push('Please enter the landlord\'s address.');
-            } else {
-                // Validate regular customer details
-                if (!$('#title').val()) errors.push('Please select a title.');
-                if (!$('#firstname').val()) errors.push('Please enter your first name.');
-                if (!$('#lastname').val()) errors.push('Please enter your last name.');
-                if (!$('#email').val() || !isValidEmail($('#email').val())) errors.push('Please enter a valid email address.');
-                if (!$('#phone').val()) errors.push('Please enter your phone number.');
-                if (!$('#postcode').val()) errors.push('Please enter your postcode.');
-                if (!$('#address1').val()) errors.push('Please enter your address.');
-            }
-
-            if (!$('#faultDescription').val()) errors.push('Please provide a fault description.');
-            if (!$('#termsConditions').is(':checked')) errors.push('Please accept the Terms & Conditions.');
+        if ($field.prop('required') && !$field.val()) {
+            isValid = false;
+            errorMessage = getCustomErrorMessage($field, 'required');
+        } else if ($field.attr('type') === 'email' && !isValidEmail($field.val())) {
+            isValid = false;
+            errorMessage = 'Please enter a valid email address.';
         }
 
-        if (errors.length > 0) {
+        if (isValid) {
+            $field.removeClass('is-invalid').addClass('is-valid');
+            $field.next('.invalid-feedback').remove();
+        } else {
+            $field.removeClass('is-valid').addClass('is-invalid');
+            if (!$field.next('.invalid-feedback').length) {
+                $field.after('<div class="invalid-feedback">' + errorMessage + '</div>');
+            }
+        }
+
+        return isValid;
+    }
+
+    function getCustomErrorMessage($field, errorType) {
+        var fieldName = $field.attr('name');
+        var customMessages = {
+            'service': 'Please select a service type.',
+            'postcode': 'Please enter your postcode.',
+            'applianceType': 'Please select an appliance type.',
+            'applianceSubtype': 'Please select an appliance subtype.',
+            'applianceMake': 'Please select an appliance make.',
+            'visitDate': 'Please select a preferred date.',
+            'visitTime': 'Please select a preferred time.',
+            'title': 'Please select a title.',
+            'firstname': 'Please enter your first name.',
+            'lastname': 'Please enter your last name.',
+            'email': 'Please enter a valid email address.',
+            'phone': 'Please enter your phone number.',
+            'address1': 'Please enter your address.',
+            'faultDescription': 'Please provide a fault description.',
+            'termsConditions': 'Please accept the Terms & Conditions.'
+        };
+
+        return customMessages[fieldName] || 'This field is required.';
+    }
+
+    function validateStep(currentStep, errorContainer) {
+        var isValid = true;
+        var errors = [];
+        var $fields = $('#step' + currentStep + ' :input:not(:button)');
+
+        $fields.each(function() {
+            var $field = $(this);
+            if (!validateField($field)) {
+                isValid = false;
+                errors.push(getCustomErrorMessage($field, 'required'));
+            }
+        });
+
+        if (!isValid) {
             errorContainer.html('');
             errors.forEach(function(error) {
                 errorContainer.append('<p>' + error + '</p>');
             });
             errorContainer.show();
-            return false;
+        } else {
+            errorContainer.hide().html('');
         }
 
-        errorContainer.hide().html('');
-        return true;
+        return isValid;
     }
+
+    // Add real-time validation
+    $('form').on('blur change', ':input', function() {
+        validateField($(this));
+    });
 
     return {
         validateStep: validateStep,
