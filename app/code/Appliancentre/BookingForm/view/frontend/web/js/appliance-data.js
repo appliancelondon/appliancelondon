@@ -50,14 +50,26 @@ define('Appliancentre_BookingForm/js/appliance-data', [], function() {
             'beko': 10, 'baumatic': 10, 'bauknecht': 10, 'ariston': 10, 'aeg': 10
         },
         getApplianceTypeOptions: function() {
-            return Object.keys(this.applianceSubtypes).map(function(type) {
-                return '<option value="' + type + '">' + type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</option>';
-            }).join('');
+            var options = Object.keys(this.applianceSubtypes).map(function(type) {
+                return {
+                    value: type,
+                    label: type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                };
+            });
+            options.sort((a, b) => a.label.localeCompare(b.label));
+            return '<option value="">Choose your Appliance</option>' + 
+                options.map(option => `<option value="${option.value}">${option.label}</option>`).join('');
         },
         getApplianceMakeOptions: function() {
-            return Object.keys(this.makePrice).map(function(make) {
-                return '<option value="' + make + '">' + make.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</option>';
-            }).join('');
+            var options = Object.keys(this.makePrice).map(function(make) {
+                return {
+                    value: make,
+                    label: make.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                };
+            });
+            options.sort((a, b) => a.label.localeCompare(b.label));
+            return '<option value="">Select Manufacturer</option>' + 
+                options.map(option => `<option value="${option.value}">${option.label}</option>`).join('');
         }
     };
 
