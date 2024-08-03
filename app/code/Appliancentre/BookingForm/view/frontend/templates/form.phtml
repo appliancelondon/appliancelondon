@@ -20,14 +20,18 @@
                 </div>
             </div>
 
-            <!-- Postcode -->
-            <div class="form-group">
-                <label for="customer_postcode"><?= $block->escapeHtml(__('Postcode *')) ?></label>
-                <input type="text" id="customer_postcode" name="postcode" required class="form-control">
-            </div>
+<!-- Postcode -->
+<div class="form-group">
+    <h3><?= $block->escapeHtml(__('1. What is your postcode?')) ?></h3>
+    <label for="customer_postcode"><?= $block->escapeHtml(__('Postcode *')) ?></label>
+    <input type="text" id="customer_postcode" name="postcode" required class="form-control">
+</div>
+            
+
 
             <!-- Appliances container -->
             <div id="appliances-container">
+                <h3><?= $block->escapeHtml(__('2. What would you like a quote for?')) ?></h3>
                 <!-- First appliance (always visible) -->
                 <div class="appliance-fields" data-appliance-id="1">
                     <h3><?= $block->escapeHtml(__('Appliance 1')) ?></h3>
