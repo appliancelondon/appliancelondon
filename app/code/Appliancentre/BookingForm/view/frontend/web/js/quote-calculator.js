@@ -4,6 +4,7 @@ define('Appliancentre_BookingForm/js/quote-calculator', ['jquery'], function($) 
     console.log('quote-calculator.js loaded');
 
     function calculateMultipleAppliancesQuote(applianceData, showError, showStep) {
+        console.log('Calculating quote...');
         var $getQuoteBtn = $('#getQuote');
         $getQuoteBtn.prop('disabled', true).text('Calculating...');
 
@@ -11,11 +12,16 @@ define('Appliancentre_BookingForm/js/quote-calculator', ['jquery'], function($) 
         var postcode = $('#customer_postcode').val();
         var appliances = [];
 
+        console.log('Service:', service);
+        console.log('Postcode:', postcode);
+
         $('.appliance-fields').each(function() {
             var $appliance = $(this);
             var applianceType = $appliance.find('.appliance-type').val();
             var applianceSubtype = $appliance.find('input[name^="appliances"][name$="[applianceSubtype]"]:checked').val();
             var applianceMake = $appliance.find('select[name$="[applianceMake]"]').val();
+
+            console.log('Appliance:', applianceType, applianceSubtype, applianceMake);
 
             if (applianceType && applianceSubtype && applianceMake) {
                 appliances.push({
@@ -25,6 +31,8 @@ define('Appliancentre_BookingForm/js/quote-calculator', ['jquery'], function($) 
                 });
             }
         });
+
+        console.log('Appliances:', appliances);
 
         if (!validateQuoteInputs(service, postcode, appliances)) {
             showError('Please fill in all required fields');
@@ -57,16 +65,28 @@ define('Appliancentre_BookingForm/js/quote-calculator', ['jquery'], function($) 
     }
 
     function validateQuoteInputs(service, postcode, appliances) {
-        if (!service || !postcode || appliances.length === 0) {
+        console.log('Validating inputs...');
+        if (!service) {
+            console.log('Service not selected');
+            return false;
+        }
+        if (!postcode) {
+            console.log('Postcode not entered');
+            return false;
+        }
+        if (appliances.length === 0) {
+            console.log('No appliances added');
             return false;
         }
 
         for (var i = 0; i < appliances.length; i++) {
             if (!appliances[i].type || !appliances[i].subtype || !appliances[i].make) {
+                console.log('Incomplete appliance data:', appliances[i]);
                 return false;
             }
         }
 
+        console.log('All inputs valid');
         return true;
     }
 
