@@ -12,7 +12,7 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
 
         if ($field.prop('required') && !$field.val()) {
             isValid = false;
-            errorMessage = getCustomErrorMessage($field, 'required');
+            errorMessage = 'This field is required.';
         } else if ($field.attr('type') === 'email' && !isValidEmail($field.val())) {
             isValid = false;
             errorMessage = 'Please enter a valid email address.';
@@ -31,7 +31,33 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
         return isValid;
     }
 
-    function getCustomErrorMessage($field, errorType) {
+    function validateStep(currentStep, errorContainer) {
+        var isValid = true;
+        var errors = [];
+        var $visibleFields = $('#step' + currentStep + ' :input:visible:not(:button)');
+
+        $visibleFields.each(function() {
+            var $field = $(this);
+            if (!validateField($field)) {
+                isValid = false;
+                errors.push(getCustomErrorMessage($field));
+            }
+        });
+
+        if (!isValid) {
+            errorContainer.html('');
+            errors.forEach(function(error) {
+                errorContainer.append('<p>' + error + '</p>');
+            });
+            errorContainer.show();
+        } else {
+            errorContainer.hide().html('');
+        }
+
+        return isValid;
+    }
+
+    function getCustomErrorMessage($field) {
         var fieldName = $field.attr('name');
         var customMessages = {
             'service': 'Please select a service type.',
@@ -54,32 +80,6 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
         return customMessages[fieldName] || 'This field is required.';
     }
 
-    function validateStep(currentStep, errorContainer) {
-        var isValid = true;
-        var errors = [];
-        var $fields = $('#step' + currentStep + ' :input:not(:button)');
-
-        $fields.each(function() {
-            var $field = $(this);
-            if (!validateField($field)) {
-                isValid = false;
-                errors.push(getCustomErrorMessage($field, 'required'));
-            }
-        });
-
-        if (!isValid) {
-            errorContainer.html('');
-            errors.forEach(function(error) {
-                errorContainer.append('<p>' + error + '</p>');
-            });
-            errorContainer.show();
-        } else {
-            errorContainer.hide().html('');
-        }
-
-        return isValid;
-    }
-
     // Add real-time validation
     $('form').on('blur change', ':input', function() {
         validateField($(this));
@@ -87,6 +87,16 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
 
     return {
         validateStep: validateStep,
-        validateForm: validateStep // For the final step, we use the same validation
+        validateForm: function(currentStep, errorContainer) {
+            // Disable all hidden inputs before validation
+            $('form :input:hidden').prop('disabled', true);
+            
+            var isValid = validateStep(currentStep, errorContainer);
+            
+            // Re-enable all inputs after validation
+            $('form :input').prop('disabled', false);
+            
+            return isValid;
+        }
     };
 });
