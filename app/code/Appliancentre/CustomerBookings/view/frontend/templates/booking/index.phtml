@@ -1,0 +1,36 @@
+<?php
+/** @var \Appliancentre\CustomerBookings\Block\Booking\Index $block */
+?>
+<div class="customer-bookings">
+    <h1><?= $block->escapeHtml(__('My Bookings')) ?></h1>
+    <?php $bookings = $block->getCustomerBookings(); ?>
+    <?php if ($bookings->getSize()): ?>
+        <table class="data table" id="my-bookings-table">
+            <caption class="table-caption"><?= $block->escapeHtml(__('My Bookings')) ?></caption>
+            <thead>
+                <tr>
+                    <th scope="col" class="col reference-number"><?= $block->escapeHtml(__('Reference Number')) ?></th>
+                    <th scope="col" class="col visit-date"><?= $block->escapeHtml(__('Visit Date')) ?></th>
+                    <th scope="col" class="col visit-time"><?= $block->escapeHtml(__('Visit Time')) ?></th>
+                    <th scope="col" class="col status"><?= $block->escapeHtml(__('Status')) ?></th>
+                    <th scope="col" class="col actions"><?= $block->escapeHtml(__('Actions')) ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($bookings as $booking): ?>
+                    <tr>
+                        <td data-th="<?= $block->escapeHtml(__('Reference Number')) ?>" class="col reference-number"><?= $block->escapeHtml($booking->getReferenceNumber()) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Visit Date')) ?>" class="col visit-date"><?= $block->escapeHtml($booking->getVisitDate()) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Visit Time')) ?>" class="col visit-time"><?= $block->escapeHtml($booking->getVisitTime()) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Status')) ?>" class="col status"><?= $block->escapeHtml($booking->getStatus()) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Actions')) ?>" class="col actions">
+                            <a href="<?= $block->getUrl('customerbookings/booking/view', ['id' => $booking->getId()]) ?>"><?= $block->escapeHtml(__('View')) ?></a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p><?= $block->escapeHtml(__('You have no bookings.')) ?></p>
+    <?php endif; ?>
+</div>

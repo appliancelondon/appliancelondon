@@ -1,0 +1,45 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Appliancentre\BookingForm\ViewModel\BookingConfirmation $viewModel */
+$viewModel = $block->getData('view_model');
+$booking = $viewModel->getBooking();
+?>
+<div class="booking-confirmation-content">
+    <?php if ($booking && $booking->getId()): ?>
+        <h1><?= $block->escapeHtml(__('Booking Confirmation')) ?></h1>
+        <p><?= $block->escapeHtml(__('Thanks for arranging the repair of your appliance with us.')) ?></p>
+        <p><?= $block->escapeHtml(__('Your Booking Reference Number is:')) ?> <strong><?= $block->escapeHtml($booking->getReferenceNumber()) ?></strong></p>
+        <h3><?= $block->escapeHtml(__('ACKNOWLEDGMENT OF RECEIPT')) ?></h3>
+        <p><?= $block->escapeHtml(__('We can confirm we\'ve received your request, and will be making the booking in accordance with your instructions. The booking will be verified and processed as quickly as possible. Your booking details are listed below.')) ?></p>
+        <p><?= $block->escapeHtml(__('Please note that a member of our customer services team will contact you within 1 business hour to confirm/amend the time of your appointment via phone, text message or email. If a reference number is not displayed, please call us immediately on 0208 343 2509.')) ?></p>
+        <p><?= $block->escapeHtml(__('Once your booking is accepted, you will receive a confirmation e-mail and text message (if a mobile number provided).')) ?></p>
+        <h4><?= $block->escapeHtml(__('Customer Details')) ?></h4>
+        <ul>
+            <li><strong><?= $block->escapeHtml(__('Name:')) ?></strong> <?= $block->escapeHtml($booking->getData('customer_name')) ?></li>
+            <li><strong><?= $block->escapeHtml(__('Address:')) ?></strong> <?= $block->escapeHtml($booking->getData('customer_address')) ?></li>
+            <li><strong><?= $block->escapeHtml(__('Phone Number:')) ?></strong> <?= $block->escapeHtml($booking->getData('customer_phone')) ?></li>
+            <li><strong><?= $block->escapeHtml(__('Email:')) ?></strong> <?= $block->escapeHtml($booking->getData('customer_email')) ?></li>
+        </ul>
+        <h4><?= $block->escapeHtml(__('Appliance Details')) ?></h4>
+        <ul>
+            <li><strong><?= $block->escapeHtml(__('Make:')) ?></strong> <?= $block->escapeHtml($booking->getApplianceMake()) ?></li>
+            <li><strong><?= $block->escapeHtml(__('Appliance Type:')) ?></strong> <?= $block->escapeHtml($booking->getApplianceType()) ?> <?= $block->escapeHtml($booking->getApplianceSubtype()) ?></li>
+            <li><strong><?= $block->escapeHtml(__('Model Number:')) ?></strong> <?= $block->escapeHtml($booking->getModelNumber()) ?></li>
+        </ul>
+        <h4><?= $block->escapeHtml(__('Visit Details')) ?></h4>
+        <ul>
+            <li><strong><?= $block->escapeHtml(__('Visit Date:')) ?></strong> <?= $block->escapeHtml($booking->getVisitDate()) ?></li>
+            <li><strong><?= $block->escapeHtml(__('Visit Time:')) ?></strong> <?= $block->escapeHtml($booking->getVisitTime()) ?></li>
+        </ul>
+        <h4><?= $block->escapeHtml(__('Additional Information')) ?></h4>
+        <p><strong><?= $block->escapeHtml(__('Fault Description:')) ?></strong> <?= $block->escapeHtml($booking->getData('fault_description')) ?></p>
+        <p><strong><?= $block->escapeHtml(__('Additional Info:')) ?></strong> <?= $block->escapeHtml($booking->getData('additional_info')) ?></p>
+        <p><?= $block->escapeHtml(__('Please check your booking information to make sure it is correct and complete. If any changes are needed, please contact us as quickly as possible. We would be glad to provide further information.')) ?></p>
+        <p><strong><?= $block->escapeHtml(__('Many thanks for using the online services of Appliance Centre.')) ?></strong></p>
+    <?php else: ?>
+        <p><?= $block->escapeHtml(__('Error: Booking information not available. Please contact our customer service for assistance.')) ?></p>
+    <?php endif; ?>
+    <!-- For debugging purposes -->
+    <h4>Debug Information:</h4>
+    <pre><?= print_r($booking ? $booking->getData() : [], true) ?></pre>
+</div>
