@@ -7,10 +7,6 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
     }
 
     function validateField($field) {
-        if ($field.prop('disabled')) {
-            return true;
-        }
-
         var isValid = true;
         var errorMessage = '';
 
@@ -38,7 +34,7 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
     function validateStep(currentStep, errorContainer) {
         var isValid = true;
         var errors = [];
-        var $fields = $('#step' + currentStep + ' :input:not(:button):not(:disabled)');
+        var $fields = $('#step' + currentStep + ' :input:visible:not(:button)');
 
         $fields.each(function() {
             var $field = $(this);
