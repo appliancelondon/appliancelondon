@@ -7,13 +7,17 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
     }
 
     function validateField($field) {
+        if ($field.prop('disabled')) {
+            return true;
+        }
+
         var isValid = true;
         var errorMessage = '';
 
         if ($field.prop('required') && !$field.val()) {
             isValid = false;
             errorMessage = 'This field is required.';
-        } else if ($field.attr('type') === 'email' && !isValidEmail($field.val())) {
+        } else if ($field.attr('type') === 'email' && $field.val() && !isValidEmail($field.val())) {
             isValid = false;
             errorMessage = 'Please enter a valid email address.';
         }
@@ -34,9 +38,9 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
     function validateStep(currentStep, errorContainer) {
         var isValid = true;
         var errors = [];
-        var $visibleFields = $('#step' + currentStep + ' :input:visible:not(:button)');
+        var $fields = $('#step' + currentStep + ' :input:not(:button):not(:disabled)');
 
-        $visibleFields.each(function() {
+        $fields.each(function() {
             var $field = $(this);
             if (!validateField($field)) {
                 isValid = false;
@@ -88,15 +92,7 @@ define('Appliancentre_BookingForm/js/form-validation', ['jquery'], function($) {
     return {
         validateStep: validateStep,
         validateForm: function(currentStep, errorContainer) {
-            // Disable all hidden inputs before validation
-            $('form :input:hidden').prop('disabled', true);
-            
-            var isValid = validateStep(currentStep, errorContainer);
-            
-            // Re-enable all inputs after validation
-            $('form :input').prop('disabled', false);
-            
-            return isValid;
+            return validateStep(currentStep, errorContainer);
         }
     };
 });
