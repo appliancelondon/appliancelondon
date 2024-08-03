@@ -114,6 +114,9 @@ define('Appliancentre_BookingForm/js/booking-form', [
         form.on('submit', function(e) {
             e.preventDefault();
             
+            // Enable all fields before validation
+            form.find(':input').prop('disabled', false);
+            
             if (formValidation.validateForm(uiHelpers.getCurrentStep(), errorContainer)) {
                 $.ajax({
                     url: form.attr('action'),
@@ -135,6 +138,9 @@ define('Appliancentre_BookingForm/js/booking-form', [
                     }
                 });
             }
+            
+            // Disable fields that should be disabled after validation
+            toggleLandlordAgentDetails($('input[name="landlordAgent"]:checked').val() === 'yes');
         });
 
         flatpickr("#visitDate", {
