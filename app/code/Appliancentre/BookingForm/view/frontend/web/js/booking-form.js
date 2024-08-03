@@ -97,14 +97,23 @@ define('Appliancentre_BookingForm/js/booking-form', [
             }
         });
 
-        $('input[name="landlordAgent"]').on('click', function() {
-            uiHelpers.toggleLandlordAgentDetails($(this).val() === 'yes');
+        function toggleLandlordAgentDetails(isLandlord) {
+            if (isLandlord) {
+                $('#landlordAgentDetails').show().find(':input').prop('disabled', false);
+                $('#regularCustomerDetails').hide().find(':input').prop('disabled', true);
+            } else {
+                $('#landlordAgentDetails').hide().find(':input').prop('disabled', true);
+                $('#regularCustomerDetails').show().find(':input').prop('disabled', false);
+            }
+        }
+
+        $('input[name="landlordAgent"]').on('change', function() {
+            toggleLandlordAgentDetails($(this).val() === 'yes');
         });
 
         form.on('submit', function(e) {
             e.preventDefault();
             
-            uiHelpers.disableHiddenFields();
             if (formValidation.validateForm(uiHelpers.getCurrentStep(), errorContainer)) {
                 $.ajax({
                     url: form.attr('action'),
@@ -126,7 +135,6 @@ define('Appliancentre_BookingForm/js/booking-form', [
                     }
                 });
             }
-            uiHelpers.enableAllInputs();
         });
 
         flatpickr("#visitDate", {
@@ -140,6 +148,6 @@ define('Appliancentre_BookingForm/js/booking-form', [
         });
 
         uiHelpers.showStep(1);
-        $('input[name="landlordAgent"]:checked').trigger('change');
+        toggleLandlordAgentDetails($('input[name="landlordAgent"]:checked').val() === 'yes');
     };
 });
