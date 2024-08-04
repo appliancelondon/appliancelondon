@@ -6,6 +6,7 @@ use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Customer\Model\CustomerFactory;
 use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Psr\Log\LoggerInterface;
 
 class Booking extends AbstractModel implements IdentityInterface
 {
@@ -17,6 +18,7 @@ class Booking extends AbstractModel implements IdentityInterface
     protected $customerFactory;
     protected $accountManagement;
     protected $encryptor;
+    protected $logger;
 
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -24,6 +26,7 @@ class Booking extends AbstractModel implements IdentityInterface
         CustomerFactory $customerFactory,
         AccountManagementInterface $accountManagement,
         EncryptorInterface $encryptor,
+        LoggerInterface $logger,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -31,6 +34,7 @@ class Booking extends AbstractModel implements IdentityInterface
         $this->customerFactory = $customerFactory;
         $this->accountManagement = $accountManagement;
         $this->encryptor = $encryptor;
+        $this->logger = $logger;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -65,6 +69,7 @@ class Booking extends AbstractModel implements IdentityInterface
             return $counter;
         } catch (\Exception $e) {
             $connection->rollBack();
+            $this->logger->critical('Error generating reference number: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -111,18 +116,6 @@ class Booking extends AbstractModel implements IdentityInterface
         return in_array($postcode, $validPostcodes);
     }
 
-    public function getSubmissionCount()
-    {
-        $collection = $this->getCollection();
-        return $collection->getSize();
-    }
-
-    public function calculateQuoteTotal($subTotal, $classFieldRadio)
-    {
-        // Implement your quote calculation logic here
-        return $subTotal + $classFieldRadio;
-    }
-
     protected function createCustomerAccount($data)
     {
         try {
@@ -136,11 +129,13 @@ class Booking extends AbstractModel implements IdentityInterface
                     ->setPassword($this->generatePassword())
                     ->save();
                 
-                // You might want to send an email to the customer with their account details here
+                $this->logger->info('New customer account created: ' . $data['email']);
+            } else {
+                $this->logger->info('Existing customer account found: ' . $data['email']);
             }
             return $customer->getId();
         } catch (\Exception $e) {
-            $this->_logger->critical('Error handling customer account: ' . $e->getMessage());
+            $this->logger->critical('Error handling customer account: ' . $e->getMessage());
         }
     }
 
