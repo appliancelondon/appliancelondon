@@ -29,7 +29,7 @@ $booking = $viewModel->getBooking();
     <h4><?= $block->escapeHtml(__('Appliance Details')) ?></h4>
     <?php 
     $appliancesJson = $booking->getAppliances();
-    $appliances = $appliancesJson ? json_decode($appliancesJson, true) : [];
+$appliances = is_string($appliancesJson) ? json_decode($appliancesJson, true) : ($appliancesJson ?: []);
     if (!empty($appliances)):
         foreach ($appliances as $index => $appliance): 
     ?>
