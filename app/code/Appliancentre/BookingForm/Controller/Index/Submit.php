@@ -40,7 +40,6 @@ class Submit extends Action
     public function execute()
     {
         $resultJson = $this->resultJsonFactory->create();
-
         if ($this->getRequest()->isPost()) {
             try {
                 $postData = $this->getRequest()->getPostValue();
@@ -87,16 +86,12 @@ class Submit extends Action
                     $booking = $this->booking->load($bookingId);
                     $this->viewModel->setBooking($booking);
                     
-                    // Log customer email before sending
-                    $this->logger->info('Customer email before sending: ' . $booking->getEmail());
-                    
                     // Send confirmation email
                     try {
                         $this->emailHelper->sendEmail($booking);
                         $this->logger->info('Confirmation email sent successfully');
                     } catch (\Exception $e) {
                         $this->logger->error('Error sending confirmation email: ' . $e->getMessage());
-                        $this->logger->error('Error trace: ' . $e->getTraceAsString());
                         // Don't throw the exception, continue with the booking process
                     }
 
@@ -129,7 +124,6 @@ class Submit extends Action
                 ]);
             }
         }
-
         $this->logger->warning('Invalid request method');
         return $resultJson->setData([
             'success' => false,
