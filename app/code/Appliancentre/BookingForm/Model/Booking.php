@@ -247,6 +247,12 @@ class Booking extends AbstractModel implements IdentityInterface, BookingInterfa
         return $this->setData(self::CUSTOMER_EMAIL, $customerEmail);
     }
 
+    // Add this method
+    public function getEmail()
+    {
+        return $this->getCustomerEmail();
+    }
+
     public function getCustomerPhone()
     {
         return $this->getData(self::CUSTOMER_PHONE);
