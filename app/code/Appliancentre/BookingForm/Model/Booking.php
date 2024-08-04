@@ -73,33 +73,39 @@ class Booking extends AbstractModel implements IdentityInterface
             throw $e;
         }
     }
-
+    
     public function saveBooking($data)
-    {
-        $referenceNumber = $this->getNextReferenceNumber();
-        $data['reference_number'] = $referenceNumber;
-        
-        // Handle multiple appliances
-        if (isset($data['appliances']) && is_array($data['appliances'])) {
-            $appliances = [];
-            foreach ($data['appliances'] as $appliance) {
-                $appliances[] = [
-                    'type' => $appliance['applianceType'],
-                    'subtype' => $appliance['applianceSubtype'],
-                    'make' => $appliance['applianceMake']
-                ];
-            }
-            $data['appliances'] = json_encode($appliances);
+{
+    $referenceNumber = $this->getNextReferenceNumber();
+    $data['reference_number'] = $referenceNumber;
+    
+    // Handle multiple appliances
+    if (isset($data['appliances']) && is_array($data['appliances'])) {
+        $appliances = [];
+        foreach ($data['appliances'] as $appliance) {
+            $appliances[] = [
+                'type' => $appliance['applianceType'],
+                'subtype' => $appliance['applianceSubtype'],
+                'make' => $appliance['applianceMake']
+            ];
         }
-
-        $this->setData($data);
-        $this->save();
-
-        // Create customer account
-        $this->createCustomerAccount($data);
-
-        return $this->getId();
+        $data['appliances'] = json_encode($appliances);
     }
+
+    // Ensure customer email is saved
+    if (!empty($data['email'])) {
+        $this->setCustomerEmail($data['email']);
+    }
+
+    $this->setData($data);
+    $this->save();
+
+    // Create customer account
+    $this->createCustomerAccount($data);
+
+    return $this->getId();
+}
+
 
     public function getAppliances()
     {
