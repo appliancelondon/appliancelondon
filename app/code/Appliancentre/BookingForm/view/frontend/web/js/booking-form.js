@@ -133,8 +133,9 @@ define('Appliancentre_BookingForm/js/booking-form', [
                             uiHelpers.showErrors([response.message], errorContainer);
                         }
                     },
-                    error: function() {
-                        uiHelpers.showErrors(['An error occurred. Please try again.'], errorContainer);
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('AJAX error:', textStatus, errorThrown);
+                        uiHelpers.showErrors(['An error occurred. Please try again. Error details: ' + textStatus], errorContainer);
                     }
                 });
             }
