@@ -88,12 +88,11 @@ class Submit extends Action
                     $this->viewModel->setBooking($booking);
                     
                     // Send confirmation email
-                    $customerEmail = $booking->getCustomerEmail();
-                    if ($customerEmail) {
-                        $this->logger->info('Sending confirmation email to: ' . $customerEmail);
+                    try {
                         $this->emailHelper->sendEmail($booking);
-                    } else {
-                        $this->logger->warning('Customer email is missing in booking data');
+                    } catch (\Exception $e) {
+                        $this->logger->error('Error sending confirmation email: ' . $e->getMessage());
+                        // Don't throw the exception, continue with the booking process
                     }
 
                     // Render confirmation page
@@ -115,7 +114,10 @@ class Submit extends Action
                     throw new \Magento\Framework\Exception\LocalizedException(__('There was a problem saving your booking. Please try again.'));
                 }
             } catch (\Exception $e) {
-                $this->logger->critical('Error in booking submission: ' . $e->getMessage(), ['exception' => $e]);
+                $this->logger->critical('Error in booking submission: ' . $e->getMessage(), [
+                    'exception' => $e,
+                    'trace' => $e->getTraceAsString()
+                ]);
                 return $resultJson->setData([
                     'success' => false,
                     'message' => $e->getMessage()
