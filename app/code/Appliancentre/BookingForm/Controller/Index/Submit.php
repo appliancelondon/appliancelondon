@@ -8,6 +8,7 @@ use Magento\Framework\Controller\Result\JsonFactory;
 use Appliancentre\BookingForm\Model\Booking;
 use Appliancentre\BookingForm\ViewModel\BookingConfirmation;
 use Appliancentre\BookingForm\Helper\Email;
+use Psr\Log\LoggerInterface;
 
 class Submit extends Action
 {
@@ -16,6 +17,7 @@ class Submit extends Action
     protected $booking;
     protected $viewModel;
     protected $emailHelper;
+    protected $logger;
 
     public function __construct(
         Context $context,
@@ -23,13 +25,15 @@ class Submit extends Action
         JsonFactory $resultJsonFactory,
         Booking $booking,
         BookingConfirmation $viewModel,
-        Email $emailHelper
+        Email $emailHelper,
+        LoggerInterface $logger
     ) {
         $this->resultPageFactory = $resultPageFactory;
         $this->resultJsonFactory = $resultJsonFactory;
         $this->booking = $booking;
         $this->viewModel = $viewModel;
         $this->emailHelper = $emailHelper;
+        $this->logger = $logger;
         parent::__construct($context);
     }
 
@@ -41,33 +45,33 @@ class Submit extends Action
             try {
                 $postData = $this->getRequest()->getPostValue();
                 
-                // Log received data
-                $this->_eventManager->dispatch('logging_event', ['message' => 'Received booking data: ' . json_encode($postData)]);
+                $this->logger->info('Received booking data: ' . json_encode($postData));
 
                 // Validate required fields
                 $requiredFields = ['service', 'postcode', 'appliances', 'visitDate', 'visitTime'];
                 foreach ($requiredFields as $field) {
                     if (empty($postData[$field])) {
-                        $this->_eventManager->dispatch('logging_event', ['message' => 'Missing required field: ' . $field]);
+                        $this->logger->warning('Missing required field: ' . $field);
                         throw new \Magento\Framework\Exception\LocalizedException(__('Please fill in all required fields.'));
                     }
                 }
 
                 // Validate appliances
                 if (!is_array($postData['appliances']) || empty($postData['appliances'])) {
-                    $this->_eventManager->dispatch('logging_event', ['message' => 'Invalid appliances data']);
+                    $this->logger->warning('Invalid appliances data');
                     throw new \Magento\Framework\Exception\LocalizedException(__('Please provide at least one appliance.'));
                 }
 
                 foreach ($postData['appliances'] as $appliance) {
                     if (empty($appliance['applianceType']) || empty($appliance['applianceSubtype']) || empty($appliance['applianceMake'])) {
-                        $this->_eventManager->dispatch('logging_event', ['message' => 'Invalid appliance data: ' . json_encode($appliance)]);
+                        $this->logger->warning('Invalid appliance data: ' . json_encode($appliance));
                         throw new \Magento\Framework\Exception\LocalizedException(__('Please provide complete information for all appliances.'));
                     }
                 }
 
                 // Validate postcode
                 if (!$this->booking->isValidPostcode($postData['postcode'])) {
+                    $this->logger->warning('Invalid postcode: ' . $postData['postcode']);
                     return $resultJson->setData([
                         'success' => false,
                         'message' => __('Sorry, we do not cover this area.')
@@ -75,19 +79,21 @@ class Submit extends Action
                 }
 
                 // Save booking
+                $this->logger->info('Saving booking');
                 $bookingId = $this->booking->saveBooking($postData);
 
-
                 if ($bookingId) {
-    $booking = $this->booking->load($bookingId);
-    $this->viewModel->setBooking($booking);
-    
-    // Send confirmation email only if email is present
-    if ($booking->getCustomerEmail()) {
-        $this->emailHelper->sendEmail($booking);
-    } else {
-        $this->_eventManager->dispatch('logging_event', ['message' => 'Customer email is missing in booking data']);
-    }
+                    $this->logger->info('Booking saved successfully. ID: ' . $bookingId);
+                    $booking = $this->booking->load($bookingId);
+                    $this->viewModel->setBooking($booking);
+                    
+                    // Send confirmation email
+                    if ($booking->getCustomerEmail()) {
+                        $this->logger->info('Sending confirmation email to: ' . $booking->getCustomerEmail());
+                        $this->emailHelper->sendEmail($booking);
+                    } else {
+                        $this->logger->warning('Customer email is missing in booking data');
+                    }
 
                     // Render confirmation page
                     $resultPage = $this->resultPageFactory->create();
@@ -104,13 +110,14 @@ class Submit extends Action
                         'confirmationHtml' => $confirmationHtml
                     ]);
                 } else {
+                    $this->logger->error('Failed to save booking');
                     return $resultJson->setData([
                         'success' => false,
                         'message' => __('There was a problem saving your booking. Please try again.')
                     ]);
                 }
             } catch (\Exception $e) {
-                $this->_eventManager->dispatch('logging_event', ['message' => 'Error in booking submission: ' . $e->getMessage()]);
+                $this->logger->critical('Error in booking submission: ' . $e->getMessage(), ['exception' => $e]);
                 return $resultJson->setData([
                     'success' => false,
                     'message' => $e->getMessage()
@@ -118,6 +125,7 @@ class Submit extends Action
             }
         }
 
+        $this->logger->warning('Invalid request method');
         return $resultJson->setData([
             'success' => false,
             'message' => __('Invalid request.')
