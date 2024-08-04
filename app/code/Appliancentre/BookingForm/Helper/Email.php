@@ -29,34 +29,34 @@ class Email extends AbstractHelper
     }
 
     public function sendEmail($booking)
-    {
-        try {
-            $this->inlineTranslation->suspend();
-            $sender = [
-                'name' => $this->escaper->escapeHtml('Your Company Name'),
-                'email' => $this->escaper->escapeHtml('sender@example.com'),
-            ];
-            $email = $booking->getCustomerEmail();
-            if (empty($email)) {
-                throw new LocalizedException(__('Customer email is empty in the booking data'));
-            }
-            $transport = $this->transportBuilder
-                ->setTemplateIdentifier('booking_confirmation_email_template')
-                ->setTemplateOptions(
-                    [
-                        'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
-                        'store' => \Magento\Store\Model\Store::DEFAULT_STORE_ID,
-                    ]
-                )
-                ->setTemplateVars(['booking' => $booking])
-                ->setFrom($sender)
-                ->addTo($email)
-                ->getTransport();
-            $transport->sendMessage();
-            $this->inlineTranslation->resume();
-        } catch (\Exception $e) {
-            $this->logger->error('Failed to send confirmation email: ' . $e->getMessage());
-            throw new LocalizedException(__('Failed to send confirmation email: %1', $e->getMessage()));
+{
+    try {
+        $customerEmail = $booking->getCustomerEmail();
+        if (empty($customerEmail)) {
+            throw new \Exception('Customer email is empty in the booking data');
         }
+
+        $this->inlineTranslation->suspend();
+        $sender = [
+            'name' => $this->escaper->escapeHtml('Your Company Name'),
+            'email' => $this->escaper->escapeHtml('sender@example.com'),
+        ];
+        $transport = $this->transportBuilder
+            ->setTemplateIdentifier('booking_confirmation_email_template')
+            ->setTemplateOptions(
+                [
+                    'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
+                    'store' => \Magento\Store\Model\Store::DEFAULT_STORE_ID,
+                ]
+            )
+            ->setTemplateVars(['booking' => $booking])
+            ->setFrom($sender)
+            ->addTo($customerEmail)
+            ->getTransport();
+        $transport->sendMessage();
+        $this->inlineTranslation->resume();
+    } catch (\Exception $e) {
+        $this->logger->error('Failed to send confirmation email: ' . $e->getMessage());
     }
+}
 }
