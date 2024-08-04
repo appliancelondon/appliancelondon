@@ -96,6 +96,12 @@ class Booking extends AbstractModel implements IdentityInterface
         return $this->getId();
     }
 
+    public function getAppliances()
+    {
+        $appliances = $this->getData('appliances');
+        return is_string($appliances) ? $appliances : '[]';
+    }
+
     public function isValidPostcode($postcode)
     {
         // Implement your postcode validation logic here
@@ -120,24 +126,21 @@ class Booking extends AbstractModel implements IdentityInterface
     protected function createCustomerAccount($data)
     {
         try {
-            $customer = $this->customerFactory->create();
-            $customer->setWebsiteId(1); // Set the appropriate website ID
-            $customer->setEmail($data['email']);
-            $customer->setFirstname($data['firstname']);
-            $customer->setLastname($data['lastname']);
-            
-            $password = $this->generatePassword();
-            $hash = $this->encryptor->getHash($password, true);
-            $customer->setPasswordHash($hash);
-
-            $customer->save();
-            
-            // You might want to send an email to the customer with their account details here
-            
+            // Check if customer already exists
+            $customer = $this->customerFactory->create()->setWebsiteId(1)->loadByEmail($data['email']);
+            if (!$customer->getId()) {
+                // Create new customer if not exists
+                $customer->setEmail($data['email'])
+                    ->setFirstname($data['firstname'])
+                    ->setLastname($data['lastname'])
+                    ->setPassword($this->generatePassword())
+                    ->save();
+                
+                // You might want to send an email to the customer with their account details here
+            }
             return $customer->getId();
         } catch (\Exception $e) {
-            // Handle the exception (e.g., log it or throw a custom exception)
-            $this->_logger->critical('Error creating customer account: ' . $e->getMessage());
+            $this->_logger->critical('Error handling customer account: ' . $e->getMessage());
         }
     }
 
