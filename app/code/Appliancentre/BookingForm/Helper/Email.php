@@ -45,36 +45,11 @@ class Email extends AbstractHelper
 
             // Prepare the booking data for the email template
             $emailVars = [
-                'booking' => new \Magento\Framework\DataObject([
-                    'getBookingName' => $booking->getFirstname() . ' ' . $booking->getLastname(),
-                    'getReferenceNumber' => $booking->getReferenceNumber(),
-                    'getService' => $booking->getService(),
-                    'getAppliances' => json_decode($booking->getAppliances(), true),
-                    'getVisitDate' => $booking->getVisitDate(),
-                    'getVisitTime' => $booking->getVisitTime(),
-                    'getLandlordAgent' => $booking->getLandlordAgent(),
-                    'getTenantTitle' => $booking->getTenantTitle(),
-                    'getTenantFirstname' => $booking->getTenantFirstname(),
-                    'getTenantLastname' => $booking->getTenantLastname(),
-                    'getTenantAddress1' => $booking->getTenantAddress1(),
-                    'getTenantAddress2' => $booking->getTenantAddress2(),
-                    'getTenantCity' => $booking->getTenantCity(),
-                    'getTenantPhone' => $booking->getTenantPhone(),
-                    'getTenantEmail' => $booking->getTenantEmail(),
-                    'getTitle' => $booking->getTitle(),
-                    'getFirstname' => $booking->getFirstname(),
-                    'getLastname' => $booking->getLastname(),
-                    'getLandlordCompany' => $booking->getLandlordCompany(),
-                    'getAddress1' => $booking->getAddress1(),
-                    'getAddress2' => $booking->getAddress2(),
-                    'getCity' => $booking->getCity(),
-                    'getPhone' => $booking->getPhone(),
-                    'getEmail' => $booking->getEmail(),
-                ])
+                'booking' => $booking
             ];
 
             $transport = $this->transportBuilder
-                ->setTemplateId(1) // Use the template ID instead of identifier
+                ->setTemplateIdentifier('booking_confirmation_email') // Use template identifier
                 ->setTemplateOptions(
                     [
                         'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
@@ -91,6 +66,8 @@ class Email extends AbstractHelper
             $this->logger->info('Confirmation email sent successfully to: ' . $customerEmail);
         } catch (\Exception $e) {
             $this->logger->error('Failed to send confirmation email: ' . $e->getMessage());
+            $this->logger->error($e->getTraceAsString());
+            throw $e; // Re-throw the exception to be handled in the controller
         }
     }
 }
