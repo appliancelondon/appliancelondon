@@ -77,12 +77,17 @@ class Submit extends Action
                 // Save booking
                 $bookingId = $this->booking->saveBooking($postData);
 
+
                 if ($bookingId) {
-                    $booking = $this->booking->load($bookingId);
-                    $this->viewModel->setBooking($booking);
-                    
-                    // Send confirmation email
-                    $this->emailHelper->sendEmail($booking);
+    $booking = $this->booking->load($bookingId);
+    $this->viewModel->setBooking($booking);
+    
+    // Send confirmation email only if email is present
+    if ($booking->getCustomerEmail()) {
+        $this->emailHelper->sendEmail($booking);
+    } else {
+        $this->_eventManager->dispatch('logging_event', ['message' => 'Customer email is missing in booking data']);
+    }
 
                     // Render confirmation page
                     $resultPage = $this->resultPageFactory->create();
