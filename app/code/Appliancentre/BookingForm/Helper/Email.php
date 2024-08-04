@@ -49,7 +49,7 @@ class Email extends AbstractHelper
             ];
 
             $transport = $this->transportBuilder
-                ->setTemplateIdentifier('booking_confirmation_email') // Use template identifier
+                ->setTemplateIdentifier('Booking Confirmation Email') // Use the template name as identifier
                 ->setTemplateOptions(
                     [
                         'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
