@@ -77,34 +77,45 @@ class Booking extends AbstractModel implements IdentityInterface, BookingInterfa
     
     public function saveBooking($data)
     {
-        $referenceNumber = $this->getNextReferenceNumber();
-        $data['reference_number'] = $referenceNumber;
-        
-        // Handle multiple appliances
-        if (isset($data['appliances']) && is_array($data['appliances'])) {
-            $appliances = [];
-            foreach ($data['appliances'] as $appliance) {
-                $appliances[] = [
-                    'type' => $appliance['applianceType'],
-                    'subtype' => $appliance['applianceSubtype'],
-                    'make' => $appliance['applianceMake']
-                ];
+        try {
+            $referenceNumber = $this->getNextReferenceNumber();
+            $data['reference_number'] = $referenceNumber;
+            
+            // Handle multiple appliances
+            if (isset($data['appliances']) && is_array($data['appliances'])) {
+                $appliances = [];
+                foreach ($data['appliances'] as $appliance) {
+                    $appliances[] = [
+                        'type' => $appliance['applianceType'],
+                        'subtype' => $appliance['applianceSubtype'],
+                        'make' => $appliance['applianceMake']
+                    ];
+                }
+                $data['appliances'] = json_encode($appliances);
             }
-            $data['appliances'] = json_encode($appliances);
+
+            // Ensure customer email is saved
+            if (!empty($data['email'])) {
+                $this->setCustomerEmail($data['email']);
+            }
+
+            // Log the data being saved
+            $this->logger->info('Saving booking data: ' . json_encode($data));
+
+            $this->setData($data);
+            $this->save();
+
+            // Create customer account
+            $this->createCustomerAccount($data);
+
+            return $this->getId();
+        } catch (\Exception $e) {
+            $this->logger->critical('Error saving booking: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
-
-        // Ensure customer email is saved
-        if (!empty($data['email'])) {
-            $this->setCustomerEmail($data['email']);
-        }
-
-        $this->setData($data);
-        $this->save();
-
-        // Create customer account
-        $this->createCustomerAccount($data);
-
-        return $this->getId();
     }
 
     public function getAppliances()
